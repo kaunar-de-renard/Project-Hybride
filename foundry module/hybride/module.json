@@ -1,0 +1,29 @@
+{
+  "id": "hybride",
+  "title": "Hybride",
+  "name": "Hybride",
+  "version": "1.0.0",
+  "description": "DUDUDUDU MAX VERSTAPPEN",
+  "author": "Kaunar de renard",
+  "authors": [
+    {
+      "name": "Kaunar de renard",
+      "url": "https://patreon.com/user?u=40253951"
+    }
+  ],
+  "compatibility": {
+    "minimum": "11",
+    "verified": "12"
+  },
+  "scripts": [
+    "scripts/main.js"
+  ],
+  "socket": true,
+  "url": "https://github.com/kaunar-de-renard/Project-Hybride", 
+  "manifest": "https://github.com/votre-repo/hybride/raw/main/module.json",
+  "download": "https://github.com/votre-repo/hybride/archive/main.zip",
+  "readme": "https://github.com/votre-repo/hybride/blob/main/README.md",
+  "license": "MIT"
+}
+
+
