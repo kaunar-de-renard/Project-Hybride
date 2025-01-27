@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interface Serveur</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #444;
+    }
+    #log {
+      border: 1px solid #ccc;
+      background: #fff;
+      padding: 10px;
+      height: 300px;
+      overflow-y: scroll;
+      font-size: 14px;
+      white-space: pre-wrap;
+      margin-bottom: 10px;
+    }
+    #command {
+      display: flex;
+      gap: 10px;
+    }
+    #command input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    #command button {
+      padding: 10px 20px;
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    #command button:hover {
+      background-color: #0056b3;
+    }
+    .log-error {
+      color: red;
+    }
+    .log-success {
+      color: green;
+    }
+    .log-info {
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+  <h1>Interface Serveur</h1>
+  <div id="log"></div>
+  <div id="command">
+    <input type="text" id="commandInput" placeholder="Entrez une commande ici..." />
+    <button id="sendButton">Exécuter</button>
+  </div>
+
+  <script>
+    let ws;
+    const logDiv = document.getElementById("log");
+    const commandInput = document.getElementById("commandInput");
+    const sendButton = document.getElementById("sendButton");
+
+    // Ajoute un message au journal avec différentes classes pour la couleur
+    function addLog(message, type = "log-info") {
+      const logEntry = document.createElement("p");
+      logEntry.className = type;
+      logEntry.textContent = message;
+      logDiv.appendChild(logEntry);
+      logDiv.scrollTop = logDiv.scrollHeight; // Scroll automatique vers le bas
+    }
+
+    // Initialise la connexion WebSocket
+    function initializeWebSocket() {
+      ws = new WebSocket("ws://localhost:3001");
+
+      ws.onopen = () => {
+        addLog("Connexion WebSocket établie avec le serveur", "log-success");
+        ws.send(JSON.stringify({ action: "authenticate", token: "mettre la clef api ici" }));
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          if (message.action === "log") {
+            addLog(message.message, "log-info");
+          } else if (message.action === "commandResult") {
+            addLog(`Résultat : ${message.result}`, "log-success");
+          } else if (message.action === "error") {
+            addLog(`Erreur : ${message.message}`, "log-error");
+          } else {
+            addLog(`Message inconnu : ${JSON.stringify(message)}`, "log-info");
+          }
+        } catch (err) {
+          addLog(`Erreur lors de la réception d'un message : ${err.message}`, "log-error");
+        }
+      };
+
+      ws.onerror = (error) => {
+        addLog(`Erreur WebSocket : ${error.message}`, "log-error");
+      };
+
+      ws.onclose = () => {
+        addLog("Connexion WebSocket fermée. Reconnexion dans 5 secondes...", "log-error");
+        setTimeout(initializeWebSocket, 5000); // log pour dire ptdr  C PT
+      };
+    }
+
+    // commande au serveur
+    function sendCommand() {
+      const command = commandInput.value.trim();
+      if (!command) {
+        alert("Veuillez entrer une commande !");
+        return;
+      }
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ action: "command", command }));
+        addLog(`Commande envoyée : ${command}`, "log-info");
+        commandInput.value = "";
+      } else {
+        addLog("Connexion WebSocket non établie. Impossible d'envoyer la commande.", "log-error");
+      }
+    }
+
+    // Gére le clic sur le bouton d'envoi
+    sendButton.addEventListener("click", sendCommand);
+
+    // Gére la touche "Enter" dans le champ de commande
+    commandInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        sendCommand();
+      }
+    });
+
+    // Initialise la connexion WebSocket
+    initializeWebSocket();
+  </script>
+</body>
+</html>
+
+
+
